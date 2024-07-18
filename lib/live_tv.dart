@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:better_player/better_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' as io;
@@ -22,6 +23,11 @@ class _LiveTvState extends State<LiveTv> {
   String url = "";
   String nomeCanal = "";
   List<Map<String, String>> canaisList = [];
+  List<Map<String, String>> canaisListViewGroup = [];
+  List<Map<String, dynamic>> listGroup = [];
+  final focusVoltar = FocusNode();
+  List<FocusNode> listfocusGroup = [];
+  List<FocusNode> listfocusCanais = [];
 
   void atualizarPlayerCanal({
     required String urlCanal,
@@ -40,41 +46,22 @@ class _LiveTvState extends State<LiveTv> {
   }
 
   void carregarCanais() async {
-    String? pathPlaylist = await ModelPlaylist().getPlaylistSelecionada();
-    if (pathPlaylist != null) {
-      File pathFile = File(pathPlaylist);
-      String fileContent = await pathFile.readAsString();
+    List<Map<String, String>> canais = [];
+    canais = await ModelPlaylist().carregarCanais();
+    var listGroupModel =
+        ModelPlaylist().groupCanaisQuantidade(listaCanais: canais);
 
-      String pattern =
-          r'(?:tvg-id="([^"]*)")?(?: tvg-logo="([^"]*)")?(?: group-title="([^"]*)")?,([^,\n]+)\n(https?://[^\s]+)';
-      List<Map<String, String>> canais = [];
-      RegExp regExptvCanais = RegExp(pattern);
-      Iterable<Match> matchesCanais = regExptvCanais.allMatches(fileContent);
-
-      canais = matchesCanais.map((match) {
-        return {
-          'id': match.group(1) ?? '',
-          'logo': match.group(2) ??
-              'http://plone.ufpb.br/labeet/contents/paginas/acervo-brazinst/copy_of_cordofones/udecra/sem-imagem.jpg/@@images/image.jpeg',
-          'group': match.group(3) ?? 'Desconhecido',
-          'name': match.group(4) ?? '',
-          'url': match.group(5) ?? '',
-        };
-      }).toList();
-
-      // Grupo de canais
-      List<Map<String, int>> listGroup = [];
-
-      // Grupo de canais
-      setState(() {
-        canaisList = canais;
-      });
-    }
+    setState(() {
+      canaisList = canais;
+      listGroup = listGroupModel;
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
     carregarCanais();
 
     betterPlayerController = BetterPlayerController(
@@ -105,15 +92,23 @@ class _LiveTvState extends State<LiveTv> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     InkWell(
+                      focusNode: focusVoltar,
+                      onFocusChange: (value) => setState(() {}),
                       onTap: () {
                         Navigator.pop(context);
                       },
                       child: Ink(
-                        child: Image.asset(
-                          "assets/volta_icon.png",
-                          height: heightMedia * 0.08,
-                          width: widthMedia * 0.05,
-                        ),
+                        child: focusVoltar.hasFocus
+                            ? Image.asset(
+                                "assets/volta_icon_hover_2.png",
+                                height: heightMedia * 0.08,
+                                width: widthMedia * 0.05,
+                              )
+                            : Image.asset(
+                                "assets/volta_icon.png",
+                                height: heightMedia * 0.08,
+                                width: widthMedia * 0.05,
+                              ),
                       ),
                     ),
                     Image.asset(
@@ -135,9 +130,10 @@ class _LiveTvState extends State<LiveTv> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    // Inicio ListView
                     Container(
                         height: heightMedia * 0.80,
-                        width: widthMedia * 0.47,
+                        width: widthMedia * 0.20,
                         decoration: BoxDecoration(
                             border: Border.all(
                                 color: Colors.white,
@@ -145,45 +141,55 @@ class _LiveTvState extends State<LiveTv> {
                                 style: BorderStyle.solid)),
                         child: Column(
                           children: [
-                            if (canaisList.isNotEmpty) ...[
+                            if (listGroup.isNotEmpty) ...[
                               Expanded(
                                 child: ListView.separated(
-                                  itemCount: canaisList.length,
-                                  padding: const EdgeInsets.all(3),
+                                  itemCount: listGroup.length,
+                                  padding: const EdgeInsets.all(2),
                                   itemBuilder: (context, index) {
-                                    return Container(
-                                      color:
-                                          const Color.fromARGB(220, 12, 12, 12),
-                                      child: ListTile(
-                                        leading: Image.network(
-                                          canaisList[index]["logo"]!,
-                                          height: 50,
-                                          width: 50,
-                                          fit: BoxFit.contain,
+                                    listfocusGroup.add(FocusNode());
+                                    return InkWell(
+                                      focusNode: listfocusGroup[index],
+                                      onFocusChange: (value) => setState(() {}),
+                                      onTap: () {
+                                        List<Map<String, String>> lista = [];
+                                        for (var i = 0;
+                                            i < canaisList.length;
+                                            i++) {
+                                          if (listGroup[index]["nomeGroup"] ==
+                                              canaisList[i]["group"]) {
+                                            lista.add(canaisList[i]);
+                                          }
+                                        }
+                                        setState(() {
+                                          canaisListViewGroup = lista;
+                                        });
+                                      },
+                                      child: Container(
+                                        color: const Color.fromARGB(
+                                            220, 12, 12, 12),
+                                        child: ListTile(
+                                          title: AutoSizeText(
+                                            listGroup[index]["nomeGroup"]!,
+                                            maxLines: 1,
+                                            style: GoogleFonts.roboto(
+                                                color: listfocusGroup[index]
+                                                        .hasFocus
+                                                    ? Colors.blueAccent
+                                                    : Colors.white),
+                                          ),
+                                          trailing: AutoSizeText(
+                                              "${listGroup[index]["quantidadeCanais"]!}",
+                                              maxLines: 1,
+                                              minFontSize: 10,
+                                              style: GoogleFonts.roboto(
+                                                  fontSize: 15,
+                                                  color: listfocusGroup[index]
+                                                          .hasFocus
+                                                      ? Colors.blueAccent
+                                                      : const Color.fromARGB(
+                                                          255, 218, 218, 218))),
                                         ),
-                                        title: Text(
-                                          canaisList[index]["name"]!,
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                        subtitle: Text(
-                                            canaisList[index]["group"]!,
-                                            style: const TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 218, 218, 218))),
-                                        trailing: IconButton(
-                                            onPressed: () {
-                                              atualizarPlayerCanal(
-                                                  urlCanal: canaisList[index]
-                                                      ["url"]!,
-                                                  nomeCanalText:
-                                                      canaisList[index]
-                                                          ["name"]!);
-                                            },
-                                            icon: const Icon(
-                                              Icons.play_arrow,
-                                              color: Colors.white,
-                                            )),
                                       ),
                                     );
                                   },
@@ -193,12 +199,74 @@ class _LiveTvState extends State<LiveTv> {
                                   ),
                                 ),
                               ),
-                            ]
+                            ],
                           ],
                         )),
+                    //Fim listview
+                    // Inicio ListView2
+                    Container(
+                        height: heightMedia * 0.80,
+                        width: widthMedia * 0.34,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                                style: BorderStyle.solid)),
+                        child: Column(
+                          children: [
+                            if (canaisListViewGroup.isNotEmpty) ...[
+                              Expanded(
+                                child: ListView.separated(
+                                  itemCount: canaisListViewGroup.length,
+                                  padding: const EdgeInsets.all(3),
+                                  itemBuilder: (context, index) {
+                                    listfocusCanais.add(FocusNode());
+                                    return InkWell(
+                                      focusNode: listfocusCanais[index],
+                                      onFocusChange: (value) => setState(() {}),
+                                      onTap: () {
+                                        atualizarPlayerCanal(
+                                            urlCanal: canaisListViewGroup[index]
+                                                ["url"]!,
+                                            nomeCanalText:
+                                                canaisListViewGroup[index]
+                                                    ["name"]!);
+                                      },
+                                      child: Container(
+                                        color: const Color.fromARGB(
+                                            220, 12, 12, 12),
+                                        child: ListTile(
+                                          leading: Image.network(
+                                            canaisListViewGroup[index]["logo"]!,
+                                            height: 50,
+                                            width: 50,
+                                            fit: BoxFit.contain,
+                                          ),
+                                          title: Text(
+                                            canaisListViewGroup[index]["name"]!,
+                                            style: GoogleFonts.roboto(
+                                                color: listfocusCanais[index]
+                                                        .hasFocus
+                                                    ? Colors.blueAccent
+                                                    : Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(
+                                    height: 5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        )),
+                    //Fim listview 2
                     SizedBox(
                       height: heightMedia * 0.80,
-                      width: widthMedia * 0.47,
+                      width: widthMedia * 0.42,
                       child: Column(
                         children: [
                           if (url != "") ...[

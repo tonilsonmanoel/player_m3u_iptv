@@ -14,11 +14,16 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  var focusTVLive = FocusNode();
+  var focusConfig = FocusNode();
+  var focusGerenciarPlayl = FocusNode();
+  var focusFechar = FocusNode();
+  var focusGerenciarcolor = false;
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
   }
 
   @override
@@ -39,6 +44,11 @@ class _HomepageState extends State<Homepage> {
               children: [
                 // Inicio Container TV Ao vivo
                 InkWell(
+                  focusNode: focusTVLive,
+                  autofocus: true,
+                  onFocusChange: (value) {
+                    setState(() {});
+                  },
                   onTap: () {
                     Navigator.push(
                         context,
@@ -46,31 +56,34 @@ class _HomepageState extends State<Homepage> {
                           builder: (context) => const LiveTv(),
                         ));
                   },
-                  child: Ink(
-                    child: Container(
-                      width: widthMedia * 0.39,
-                      height: heightMedia * 0.65,
-                      color: const Color.fromARGB(220, 12, 12, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            "assets/logotv.png",
-                            height: heightMedia * 0.32,
-                            width: widthMedia * 0.32,
-                          ),
-                          AutoSizeText(
-                            "TV AO VIVO",
-                            minFontSize: 22,
-                            maxLines: 1,
-                            style: GoogleFonts.lalezar(
-                                color: Colors.white,
-                                fontSize: 35,
-                                fontWeight: FontWeight.normal),
-                          )
-                        ],
-                      ),
+                  child: Container(
+                    width: widthMedia * 0.39,
+                    height: heightMedia * 0.65,
+                    color: const Color.fromARGB(220, 12, 12, 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          "assets/logotv.png",
+                          height: heightMedia * 0.35,
+                          width: widthMedia * 0.32,
+                        ),
+                        SizedBox(
+                          height: heightMedia * 0.02,
+                        ),
+                        AutoSizeText(
+                          "TV AO VIVO",
+                          minFontSize: 26,
+                          maxLines: 1,
+                          style: GoogleFonts.lalezar(
+                              color: focusTVLive.hasFocus
+                                  ? Colors.blue
+                                  : Colors.white,
+                              fontSize: 40,
+                              fontWeight: FontWeight.normal),
+                        )
+                      ],
                     ),
                   ),
                 ),
@@ -85,6 +98,10 @@ class _HomepageState extends State<Homepage> {
                     children: [
                       // Inicio Container Configurações
                       InkWell(
+                        focusNode: focusConfig,
+                        onFocusChange: (value) {
+                          setState(() {});
+                        },
                         onTap: () {
                           Navigator.push(
                               context,
@@ -92,44 +109,48 @@ class _HomepageState extends State<Homepage> {
                                 builder: (context) => const ConfigPage(),
                               ));
                         },
-                        child: Ink(
-                          child: Container(
-                            width: widthMedia * 0.395,
-                            height: heightMedia * 0.19,
-                            color: const Color.fromARGB(220, 12, 12, 12),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    "assets/config_icon.png",
-                                    height: heightMedia * 0.11,
-                                    width: widthMedia * 0.06,
-                                    fit: BoxFit.cover,
+                        child: Container(
+                          width: widthMedia * 0.395,
+                          height: heightMedia * 0.19,
+                          color: const Color.fromARGB(220, 12, 12, 12),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset(
+                                  "assets/config_icon.png",
+                                  height: heightMedia * 0.11,
+                                  width: widthMedia * 0.06,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: AutoSizeText(
+                                    "CONFIGURAÇÕES",
+                                    minFontSize: 22,
+                                    maxLines: 1,
+                                    style: GoogleFonts.lalezar(
+                                        color: focusConfig.hasFocus
+                                            ? Colors.blue
+                                            : Colors.white,
+                                        fontSize: 35,
+                                        fontWeight: FontWeight.normal),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: AutoSizeText(
-                                      "CONFIGURAÇÕES",
-                                      minFontSize: 22,
-                                      maxLines: 1,
-                                      style: GoogleFonts.lalezar(
-                                          color: Colors.white,
-                                          fontSize: 35,
-                                          fontWeight: FontWeight.normal),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                              )
+                            ],
                           ),
                         ),
                       ),
                       // Fim Container Configurações
                       // Inicio Container Gerenciar Playlist
                       InkWell(
+                        focusNode: focusGerenciarPlayl,
+                        onFocusChange: (value) {
+                          setState(() {});
+                        },
                         onTap: () {
                           Navigator.push(
                               context,
@@ -137,81 +158,82 @@ class _HomepageState extends State<Homepage> {
                                 builder: (context) => const GerenciarPlaylist(),
                               ));
                         },
-                        child: Ink(
-                          child: Container(
-                            width: widthMedia * 0.395,
-                            height: heightMedia * 0.19,
-                            color: const Color.fromARGB(220, 12, 12, 12),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    "assets/playlist_icon.png",
-                                    height: heightMedia * 0.11,
-                                    width: widthMedia * 0.06,
-                                    fit: BoxFit.cover,
+                        child: Container(
+                          width: widthMedia * 0.395,
+                          height: heightMedia * 0.19,
+                          color: const Color.fromARGB(220, 12, 12, 12),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset(
+                                  "assets/playlist_icon.png",
+                                  height: heightMedia * 0.11,
+                                  width: widthMedia * 0.06,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: AutoSizeText(
+                                    "GERENCIAMENTO\nDE PLAYLIST",
+                                    minFontSize: 22,
+                                    maxLines: 2,
+                                    style: GoogleFonts.lalezar(
+                                        color: focusGerenciarPlayl.hasFocus
+                                            ? Colors.blue
+                                            : Colors.white,
+                                        fontSize: 35,
+                                        height: 1,
+                                        fontWeight: FontWeight.normal),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: AutoSizeText(
-                                      "GERENCIAMENTO\nDE PLAYLIST",
-                                      minFontSize: 22,
-                                      maxLines: 2,
-                                      style: GoogleFonts.lalezar(
-                                          color: Colors.white,
-                                          fontSize: 35,
-                                          height: 1,
-                                          fontWeight: FontWeight.normal),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                              )
+                            ],
                           ),
                         ),
                       ),
                       // Fim Container Gerenciar Playlist
                       // Inicio Container Fechar
                       InkWell(
+                        focusNode: focusFechar,
                         onTap: () {
                           SystemNavigator.pop();
                         },
-                        child: Ink(
-                          child: Container(
-                            width: widthMedia * 0.395,
-                            height: heightMedia * 0.19,
-                            color: const Color.fromARGB(220, 12, 12, 12),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    "assets/sair_icone.png",
-                                    height: heightMedia * 0.11,
-                                    width: widthMedia * 0.06,
-                                    fit: BoxFit.cover,
+                        child: Container(
+                          width: widthMedia * 0.395,
+                          height: heightMedia * 0.19,
+                          color: const Color.fromARGB(220, 12, 12, 12),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset(
+                                  "assets/sair_icone.png",
+                                  height: heightMedia * 0.11,
+                                  width: widthMedia * 0.06,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: AutoSizeText(
+                                    "FECHAR",
+                                    minFontSize: 22,
+                                    maxLines: 2,
+                                    style: GoogleFonts.lalezar(
+                                        color: focusFechar.hasFocus
+                                            ? Colors.blue
+                                            : Colors.white,
+                                        fontSize: 35,
+                                        height: 1,
+                                        fontWeight: FontWeight.normal),
                                   ),
                                 ),
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: AutoSizeText(
-                                      "FECHAR",
-                                      minFontSize: 22,
-                                      maxLines: 2,
-                                      style: GoogleFonts.lalezar(
-                                          color: Colors.white,
-                                          fontSize: 35,
-                                          height: 1,
-                                          fontWeight: FontWeight.normal),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                              )
+                            ],
                           ),
                         ),
                       ),

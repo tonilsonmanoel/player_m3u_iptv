@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:better_player/better_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io' as io;
@@ -20,10 +21,13 @@ class _GerenciarPlaylistState extends State<GerenciarPlaylist> {
   List<Map<String, String>> listaPlaylist = [];
   List<String> options = [];
   String? currentOption;
+  final focusVoltar = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeRight]);
     carregarPlaylist();
   }
 
@@ -68,15 +72,23 @@ class _GerenciarPlaylistState extends State<GerenciarPlaylist> {
                 Row(
                   children: [
                     InkWell(
+                      focusNode: focusVoltar,
+                      onFocusChange: (value) => setState(() {}),
                       onTap: () {
                         Navigator.pop(context);
                       },
                       child: Ink(
-                        child: Image.asset(
-                          "assets/volta_icon.png",
-                          height: heightMedia * 0.08,
-                          width: widthMedia * 0.05,
-                        ),
+                        child: focusVoltar.hasFocus
+                            ? Image.asset(
+                                "assets/volta_icon_hover_2.png",
+                                height: heightMedia * 0.08,
+                                width: widthMedia * 0.05,
+                              )
+                            : Image.asset(
+                                "assets/volta_icon.png",
+                                height: heightMedia * 0.08,
+                                width: widthMedia * 0.05,
+                              ),
                       ),
                     ),
                     const Spacer(),
@@ -217,6 +229,7 @@ class _GerenciarPlaylistState extends State<GerenciarPlaylist> {
                               color: Colors.white, fontWeight: FontWeight.w500),
                         ),
                         trailing: IconButton(
+                          focusColor: Colors.white,
                           onPressed: () {
                             ModelPlaylist().removePlaylist(
                                 nomePlaylist: listaPlaylist[index]["nome"]!,
